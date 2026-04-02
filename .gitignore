@@ -1,0 +1,19 @@
+# Environment variables
+.env
+.env.local
+
+# Dependency directories
+node_modules/
+npm-debug.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# N8N 
+/n8n-workflows/credentials/
+
+# Vercel / Deployment
+.vercel
+/dist
+/build
