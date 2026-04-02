@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let chatHistory = JSON.parse(sessionStorage.getItem('bookleaf_chat_history')) || [];
     
     // Webhook URL
-    const WEBHOOK_URL = 'http://localhost:5678/webhook/query';
+    const WEBHOOK_URL = 'https://mukul1811.app.n8n.cloud/webhook/query';
 
     // Theme initialization
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -112,21 +112,31 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: userEmail, query: message })
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                },
+                body: new URLSearchParams({
+                    email: userEmail,
+                    query: message,
+                }).toString(),
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
             const data = await response.json();
             
             typingIndicator.classList.add('hidden');
-            if (data.error) {
+            if (data.success === false) {
                 addErrorMessage(data.response || "Sorry, I'm experiencing technical difficulties.");
             } else {
-                addBotMessage(data.response, data.escalated);
+                addBotMessage(data.response, data.answer_source === 'fallback' || data.confidence < 80);
             }
         } catch (error) {
             console.error('Error contacting webhook:', error);
             typingIndicator.classList.add('hidden');
-            addErrorMessage('Cannot connect to the server. Please make sure n8n is running.');
+            addErrorMessage(`Cannot connect to the server. ${error.message || 'Request failed.'}`);
         }
     });
 
